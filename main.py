@@ -2,7 +2,9 @@
 import requests
 import pandas as pd
 import plotly.graph_objs as go
-from plotly.offline import iplot
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
 
 URL = "https://coronavirus-tracker-api.herokuapp.com/v2/locations"
 
@@ -36,4 +38,12 @@ layout = dict(
 
 coronamap = go.Figure(data = [data], layout = layout)
 
-iplot(coronamap)
+app = dash.Dash()
+
+app.layout = html.Div([
+    dcc.Graph(figure=coronamap)
+])
+
+app.run_server(debug=True, use_reloader=True) # Turn off reloader if inside Jupyter
+
+# iplot(coronamap)
