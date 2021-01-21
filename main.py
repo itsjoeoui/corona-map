@@ -1,40 +1,36 @@
 ''' A simple coronavirus data visualization program using Plotly '''
+from datetime import date
 import pandas as pd
 import plotly.graph_objs as go
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
+import dash_bootstrap_components as dbc
 
 df = pd.read_csv('https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv')
 
-# Create month and day columns
-df['month'] = df['date'].apply(lambda x: int(x.split('-')[1]))
-df['day'] = df['date'].apply(lambda x: int(x.split('-')[2]))
+df['date'] = df['date'].apply(date.fromisoformat)
 
-# Only grab December for now
-MONTH = 12
-df = df[(df['location'] != 'World') & (df['month'] == MONTH)]
-
-app = dash.Dash()
+app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 app.layout = html.Div([
-    dcc.Graph(id='graph-with-slider'),
-    dcc.Slider(
-        id='day-slider',
-        min=df['day'].min(),
-        max=df['day'].max(),
-        value=df['day'].min(),
-        marks={str(day): str(day) for day in df['day'].unique()},
-        step=None
+    dcc.Graph(id='graph-with-picker'),
+    dcc.DatePickerSingle(
+        id='my-date-picker-single',
+        min_date_allowed=date(2020, 1, 21),
+        max_date_allowed=date(2021, 1, 1),
+        initial_visible_month=date(2020, 1, 22),
+        date=date(2020, 1, 22)
     )
 ])
 
 @app.callback(
-    Output('graph-with-slider', 'figure'),
-    Input('day-slider', 'value'))
-def update_figure(selected_day):
-    filtered_df = df[df['day'] == selected_day]
+    Output('graph-with-picker', 'figure'),
+    Input('my-date-picker-single', 'date'))
+def update_figure(date_value):
+    filtered_df = df[df['date'] == date.fromisoformat(date_value)]
+
     data = dict(
         type = 'choropleth',
         locations = filtered_df['iso_code'],
@@ -66,4 +62,4 @@ def update_figure(selected_day):
     return fig
 
 if __name__ == '__main__':
-    app.run_server(debug=True, use_reloader=True) # Turn off reloader if inside Jupyter
+    app.run_server(debug=True)
