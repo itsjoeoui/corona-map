@@ -16,29 +16,80 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 server = app.server
 
-app.layout = html.Div([
-    dcc.Graph(id='graph-with-picker'),
-    dcc.Dropdown(
-        id='projection-type-dropdown',
-        options=[
-            {'label': 'Orthographic', 'value': 'orthographic'},
-            {'label': 'Equirectangular', 'value': 'equirectangular'}
-        ],
-        value='equirectangular'
-    ),
-    dcc.DatePickerSingle(
-        id='my-date-picker-single',
-        min_date_allowed=date(2020, 1, 21),
-        max_date_allowed=date.today(),
-        initial_visible_month=date.today() - timedelta(days=1),
-        date=date.today() - timedelta(days=1)
-    )
-])
+links = {
+    "home": "https://itsjoeoui.com/",
+    "github": "https://github.com/itsjoeoui/corona-map"
+}
+
+jumbotron = dbc.Jumbotron(
+    [
+        html.H1("COVID-19 Data Visualization", className="display-3"),
+        html.P(
+            "A simple coronavirus data visualization program using Plotly",
+            className="lead",
+        ),
+        html.Hr(className="my-2"),
+        html.P("Made with love by Joey Yu"),
+        html.P([
+            dbc.Button("Learn more", color="primary", className="mr-1", href=links['github']),
+            dbc.Button("Return to home", color="secondary", className="mr-1", href=links['home'])
+        ])
+    ]
+)
+
+controls = dbc.Card(
+    [
+        dbc.FormGroup(
+            [
+                dbc.Label("Projection"),
+                dcc.Dropdown(
+                    id="projection-type-dropdown",
+                    options=[
+                        {'label': 'Orthographic', 'value': 'orthographic'},
+                        {'label': 'Equirectangular', 'value': 'equirectangular'}
+                    ],
+                    value='orthographic'
+                )
+            ]
+        ),
+        dbc.FormGroup(
+            [
+                dbc.Label("Date"),
+                dcc.DatePickerSingle(
+                    id='my-date-picker-single',
+                    min_date_allowed=date(2020, 1, 21),
+                    max_date_allowed=date.today(),
+                    initial_visible_month=date.today() - timedelta(days=1),
+                    date=date.today() - timedelta(days=1)
+                )
+            ]
+        )
+    ],
+    body=True
+)
+
+app.layout = dbc.Container(
+    [
+        dbc.Row(
+            dbc.Col(jumbotron, md=12)
+        ),
+        dbc.Row(
+            [
+                dbc.Col(controls, md=4),
+                dbc.Col(dcc.Graph(id='graph-with-picker'), md=8),
+            ],
+            align="center"
+        )
+    ],
+    fluid=False
+)
 
 @app.callback(
     Output('graph-with-picker', 'figure'),
-    Input('my-date-picker-single', 'date'),
-    Input('projection-type-dropdown', 'value')
+    [
+        Input('my-date-picker-single', 'date'),
+        Input('projection-type-dropdown', 'value')
+    ]
 )
 def update_figure(date_value, projection_type):
     filtered_df = df[df['date'] == date.fromisoformat(date_value)]
@@ -60,7 +111,6 @@ def update_figure(date_value, projection_type):
     )
 
     layout = dict(
-        title='COVID-19 Data Visualization',
         geo=dict(
             showframe=True,
             showocean=True, oceancolor="LightBlue",
