@@ -59,10 +59,11 @@ def update_figure(selected_day):
         )
     )
 
-    coronamap = go.Figure(data = [data], layout = layout)
+    fig = go.Figure(data = [data], layout = layout)
 
-    coronamap.update_layout(transition_duration=500)
+    fig.update_layout(transition_duration=500)
 
-    return coronamap
+    return fig
 
-app.run_server(debug=True, use_reloader=True) # Turn off reloader if inside Jupyter
+if __name__ == '__main__':
+    app.run_server(debug=True, use_reloader=True) # Turn off reloader if inside Jupyter
