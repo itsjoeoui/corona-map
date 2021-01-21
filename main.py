@@ -12,7 +12,9 @@ df = pd.read_csv('https://raw.githubusercontent.com/owid/covid-19-data/master/pu
 
 df['date'] = df['date'].apply(date.fromisoformat)
 
-app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+
+server = app.server
 
 app.layout = html.Div([
     dcc.Graph(id='graph-with-picker'),
