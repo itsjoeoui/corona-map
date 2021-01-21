@@ -55,6 +55,8 @@ def update_figure(date_value, projection_type):
         colorbar=dict(
             title='Death Count (M)'
         ),
+        zmin=0, 
+        zmax=30 * 10 ** 6
     )
 
     layout = dict(
