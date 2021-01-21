@@ -1,5 +1,5 @@
 ''' A simple coronavirus data visualization program using Plotly '''
-from datetime import date
+from datetime import date, timedelta
 import pandas as pd
 import plotly.graph_objs as go
 import dash
@@ -18,46 +18,59 @@ server = app.server
 
 app.layout = html.Div([
     dcc.Graph(id='graph-with-picker'),
+    dcc.Dropdown(
+        id='projection-type-dropdown',
+        options=[
+            {'label': 'Orthographic', 'value': 'orthographic'},
+            {'label': 'Equirectangular', 'value': 'equirectangular'}
+        ],
+        value='equirectangular'
+    ),
     dcc.DatePickerSingle(
         id='my-date-picker-single',
         min_date_allowed=date(2020, 1, 21),
-        max_date_allowed=date(2021, 1, 1),
-        initial_visible_month=date(2020, 1, 22),
-        date=date(2020, 1, 22)
+        max_date_allowed=date.today(),
+        initial_visible_month=date.today() - timedelta(days=1),
+        date=date.today() - timedelta(days=1)
     )
 ])
 
 @app.callback(
     Output('graph-with-picker', 'figure'),
-    Input('my-date-picker-single', 'date'))
-def update_figure(date_value):
+    Input('my-date-picker-single', 'date'),
+    Input('projection-type-dropdown', 'value')
+)
+def update_figure(date_value, projection_type):
     filtered_df = df[df['date'] == date.fromisoformat(date_value)]
 
     data = dict(
-        type = 'choropleth',
-        locations = filtered_df['iso_code'],
-        locationmode = 'ISO-3',
-        colorscale = 'burgyl',
-        z = filtered_df['total_cases'],
-        marker = dict(
-            line = dict(color = 'rgb(12,12,12)', width = 1)
+        type='choropleth',
+        locations=filtered_df['iso_code'],
+        locationmode='ISO-3',
+        colorscale='burgyl',
+        z=filtered_df['total_cases'],
+        marker=dict(
+            line=dict(color='rgb(12,12,12)', width=1)
         ),
-        colorbar = dict(
-            title = 'Death Count (M)'
+        colorbar=dict(
+            title='Death Count (M)'
         ),
     )
 
     layout = dict(
-        title = 'COVID-19 Data Visualization',
-        geo = dict(
-            showframe = True,
-            projection = {
-                'type':'equirectangular'
+        title='COVID-19 Data Visualization',
+        geo=dict(
+            showframe=True,
+            showocean=True, oceancolor="LightBlue",
+            showlakes=True, lakecolor="Blue",
+            showrivers=True, rivercolor="Blue",
+            projection={
+                'type':projection_type
             }
         )
     )
 
-    fig = go.Figure(data = [data], layout = layout)
+    fig = go.Figure(data=[data], layout=layout)
 
     fig.update_layout(transition_duration=500)
 
