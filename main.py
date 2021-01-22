@@ -1,5 +1,5 @@
-''' A simple coronavirus data visualization program using Plotly '''
-from datetime import date, timedelta
+'''A simple coronavirus data visualization program using Plotly'''
+from datetime import date
 import pandas as pd
 import plotly.graph_objs as go
 import dash
