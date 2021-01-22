@@ -45,27 +45,48 @@ controls = dbc.Card(
                 dcc.Dropdown(
                     id="projection-type-dropdown",
                     options=[
+                        {'label': 'Equirectangular', 'value': 'equirectangular'},
                         {'label': 'Orthographic', 'value': 'orthographic'},
-                        {'label': 'Equirectangular', 'value': 'equirectangular'}
+                        {'label': 'Natural earth', 'value': 'natural earth'}
                     ],
-                    value='orthographic'
+                    value='equirectangular'
                 )
             ]
         ),
         dbc.FormGroup(
             [
-                dbc.Label("Date"),
-                dcc.DatePickerSingle(
-                    id='my-date-picker-single',
-                    min_date_allowed=date(2020, 1, 21),
-                    max_date_allowed=date.today(),
-                    initial_visible_month=date.today() - timedelta(days=1),
-                    date=date.today() - timedelta(days=1)
+                dbc.Label("Year"),
+                dcc.Dropdown(
+                    id="year-dropdown",
+                    options=[
+                        {"label": i, "value": i} for i in {i.year for i in df['date']}
+                    ],
+                    value=(date.today() - timedelta(days=1)).year
+                )
+            ]
+        ),
+        dbc.FormGroup(
+            [
+                dbc.Label("Month"),
+                dcc.Dropdown(
+                    id="month-dropdown",
+                    options=[
+                        {"label": i, "value": i} for i in {i.month for i in df['date']}
+                    ],
+                    value=(date.today() - timedelta(days=1)).month
                 )
             ]
         )
     ],
     body=True
+)
+
+slider = dcc.Slider(
+    id='day-slider',
+    min=1,
+    max=31,
+    marks={str(day): str(day) for day in range(32)},
+    value=(date.today() - timedelta(days=1)).day
 )
 
 app.layout = dbc.Container(
@@ -79,6 +100,9 @@ app.layout = dbc.Container(
                 dbc.Col(dcc.Graph(id='graph-with-picker'), md=8),
             ],
             align="center"
+        ),
+        dbc.Row(
+            dbc.Col(slider, md=12)
         )
     ],
     fluid=False
@@ -87,12 +111,14 @@ app.layout = dbc.Container(
 @app.callback(
     Output('graph-with-picker', 'figure'),
     [
-        Input('my-date-picker-single', 'date'),
-        Input('projection-type-dropdown', 'value')
+        Input('projection-type-dropdown', 'value'),
+        Input('year-dropdown', 'value'),
+        Input('month-dropdown', 'value'),
+        Input('day-slider', 'value')
     ]
 )
-def update_figure(date_value, projection_type):
-    filtered_df = df[df['date'] == date.fromisoformat(date_value)]
+def update_figure(projection_type, year, month, day):
+    filtered_df = df[df['date'] == date(year, month, day)]
 
     data = dict(
         type='choropleth',
@@ -106,7 +132,7 @@ def update_figure(date_value, projection_type):
         colorbar=dict(
             title='Death Count (M)'
         ),
-        zmin=0, 
+        zmin=0,
         zmax=30 * 10 ** 6
     )
 
