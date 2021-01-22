@@ -61,7 +61,7 @@ controls = dbc.Card(
                     options=[
                         {"label": i, "value": i} for i in {i.year for i in df['date']}
                     ],
-                    value=(date.today() - timedelta(days=1)).year
+                    value=df.iloc[-1]['date'].year
                 )
             ]
         ),
@@ -73,7 +73,7 @@ controls = dbc.Card(
                     options=[
                         {"label": i, "value": i} for i in {i.month for i in df['date']}
                     ],
-                    value=(date.today() - timedelta(days=1)).month
+                    value=df.iloc[-1]['date'].month
                 )
             ]
         )
@@ -86,7 +86,7 @@ slider = dcc.Slider(
     min=1,
     max=31,
     marks={str(day): str(day) for day in range(32)},
-    value=(date.today() - timedelta(days=1)).day
+    value=df.iloc[-1]['date'].day
 )
 
 app.layout = dbc.Container(
